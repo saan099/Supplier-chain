@@ -37,11 +37,11 @@ func (t *SupplierChaincode) Init (stub shim.ChaincodeStubInterface, args []strin
   if len(args[0])<1||len(args[1])<1||len(args[2])<1 {
     return nil,errors.New("No value given to one field")
   }
-  err=stub.PutState(buyerNameKey,args[0])
+	err=stub.PutState(buyerNameKey,[]byte(args[0]))
 
-  err=stub.PutState(supplierNameKey,args[1])
+	err=stub.PutState(supplierNameKey,[]byte(args[1]))
 
-  err=stub.PutState(bankNameKey,args[2])
+	err=stub.PutState(bankNameKey,[]byte(args[2]))
 
   if err!=nil {
     return nil,errors.New("didnt commit node's names")
