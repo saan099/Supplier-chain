@@ -53,7 +53,7 @@ func (t *SupplierChaincode) Init (stub shim.ChaincodeStubInterface,function stri
 func (t *SupplierChaincode) Invoke (stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
 
   if function=="init" {
-    return t.Init(stub,args)
+    return t.Init(stub,function,args)
   } else if function=="makeOrder" {
     return t.MakeOrder(stub,args)
   }
@@ -68,7 +68,7 @@ func (t *SupplierChaincode) MakeOrder (stub shim.ChaincodeStubInterface, args []
     return nil, errors.New("number of arguments are wrong")
   }
   str:=`{"order_id": "`+args[0]+`", "product_name": "`+args[1]+`", "quantity": `+args[2]+`, "unit_cost":`+args[3]+`,"delivery_date":"`+args[4]+`","interest":`+args[5]+`}`
-  err=stub.PutState(args[0],str)
+	err=stub.PutState(args[0],[]byte(str))
   if err!=nil {
     return nil,errors.New("error created in order committed")
   }
