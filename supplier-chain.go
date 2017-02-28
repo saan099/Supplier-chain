@@ -29,7 +29,7 @@ func main () {
 		fmt.Printf("Error starting Simple chaincode: %s", err)
 	}
 }
-func (t *SupplierChaincode) Init (stub shim.ChaincodeStubInterface, args []string) ([]byte,error) {
+func (t *SupplierChaincode) Init (stub shim.ChaincodeStubInterface,function string, args []string) ([]byte,error) {
   var err error
   if len(args)!=3 {
     return nil,errors.New("wrong number of arguments")
