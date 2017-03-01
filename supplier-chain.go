@@ -95,7 +95,7 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice (stub shim.ChaincodeStubInter
 
   inv.Unit_cost, _=strconv.Atoi(args[1])
   inv.Delivery_date=args[2]
-  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "unit_cost":`+strconv.Itoa(inv.Unit_cost)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 64)+`}`
+  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "unit_cost":`+strconv.Itoa(inv.Unit_cost)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 32)+`}`
   err=stub.PutState(inv.Order_id,[]byte(str))
   if err!=nil {
     return nil, errors.New("state not comitted")
