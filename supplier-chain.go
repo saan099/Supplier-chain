@@ -7,7 +7,7 @@ import (
   "github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-type order struct{
+type invoice struct{
   Order_id string `json:"order_id"`
   Product_name string `json:"product_name"`
   Quantity int `json:"quantity"`
@@ -55,19 +55,21 @@ func (t *SupplierChaincode) Invoke (stub shim.ChaincodeStubInterface, function s
   if function=="init" {
     return t.Init(stub,function,args)
   } else if function=="makeOrder" {
-    return t.MakeOrder(stub,args)
+    return t.MakeOrderinInvoice(stub,args)
+  } else if function=="supplyDetails" {
+    return SupplyDetailsinInvoice(stub, args)
   }
 
   return nil,errors.New("No function invoked")
 
 }
 
-func (t *SupplierChaincode) MakeOrder (stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SupplierChaincode) MakeOrderinInvoice (stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
   var err error
-  if len(args)!=6 {
+  if len(args)!=3 {
     return nil, errors.New("number of arguments are wrong")
   }
-  str:=`{"order_id": "`+args[0]+`", "product_name": "`+args[1]+`", "quantity": `+args[2]+`, "unit_cost":`+args[3]+`,"delivery_date":"`+args[4]+`","interest":`+args[5]+`}`
+  str:=`{"order_id": "`+args[0]+`", "product_name": "`+args[1]+`", "quantity": `+args[2]+`, "unit_cost":`+strconv.Itoa(0)+`,"delivery_date":"`+`null`+`","interest":`+strconv.Itoa(0)+`}`
 	err=stub.PutState(args[0],[]byte(str))
   if err!=nil {
     return nil,errors.New("error created in order committed")
@@ -75,7 +77,31 @@ func (t *SupplierChaincode) MakeOrder (stub shim.ChaincodeStubInterface, args []
 
   return nil,nil
 }
+func (t *SupplierChaincode) SupplyDetailsinInvoice (stub shim.ChaincodeStubInterface,args []string) ([]byte,error) {
+  var err error
+  if len(args)!=3 {
+    return nil, errors.New("number of arguemnts are wrong")
+  }
+  valAsbytes, err:=stub.GetState(args[0])
+  if err!=nil {
+    return nil, errors.New("state not found")
+  }
+  inv:=invoice{}
+  err=json.Unmarshal(valAsbytes,&inv)
+  if err!=nil {
+    return nil, err
+  }
 
+  inv.Unit_cost=strconv.Atoi(args[1])
+  inv.Delivery_date=args[2]
+  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "unit_cost":`+strconv.Itoa(inv.Unit_cost)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.Itoa(inv.Interest)+`}`
+  err=stub.PutState(inv.Order_id,[]byte(str))
+  if err!=nil {
+    return nil, errors.New("state not comitted")
+  }
+  return nil,nil
+
+}
 func (t *SupplierChaincode) Query (stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
   if function=="readOrder" {
@@ -99,3 +125,4 @@ func (t *SupplierChaincode) ReadOrder (stub shim.ChaincodeStubInterface,args []s
    return valAsbytes, nil
 
 }
+
