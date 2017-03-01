@@ -58,7 +58,7 @@ func (t *SupplierChaincode) Invoke (stub shim.ChaincodeStubInterface, function s
   } else if function=="makeOrder" {
     return t.MakeOrderinInvoice(stub,args)
   } else if function=="supplyDetails" {
-    return SupplyDetailsinInvoice(stub, args)
+    return t.SupplyDetailsinInvoice(stub, args)
   }
 
   return nil,errors.New("No function invoked")
@@ -93,9 +93,9 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice (stub shim.ChaincodeStubInter
     return nil, err
   }
 
-  inv.Unit_cost=strconv.Atoi(args[1])
+  inv.Unit_cost, _=strconv.Atoi(args[1])
   inv.Delivery_date=args[2]
-  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "unit_cost":`+strconv.Itoa(inv.Unit_cost)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.Itoa(inv.Interest)+`}`
+  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "unit_cost":`+strconv.Itoa(inv.Unit_cost)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 64)+`}`
   err=stub.PutState(inv.Order_id,[]byte(str))
   if err!=nil {
     return nil, errors.New("state not comitted")
