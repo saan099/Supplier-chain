@@ -12,10 +12,31 @@ type invoice struct{
   Order_id string `json:"order_id"`
   Product_name string `json:"product_name"`
   Quantity int `json:"quantity"`
-  Unit_cost int `json:"unit_cost"`
+  Total_payment int `json:"total_payment"`
   Delivery_date string `json:"delivery_date"`
   Interest float64 `json:"interest"`
 }
+
+type buyer struct {
+  BuyerId string `json:"buyerId"`
+  BuyerName string `json:"buyerName"`
+  BuyerBalance float64 `json:"buyerBalance"`
+  GoodsRecieved string `json:"goodsRecieved"` 
+}
+
+type supplier struct {
+  SupplierId string `json:"supplierId"`
+  SupplierName string `json:"supplierName"`
+  SupplierBalance float64 `json:"supplierBalance"`
+  GoodsDelivered string `json:"goodsDelivered"`
+}
+type bank struct {
+  BankId string `json:"bankId"`
+  BankName string `json:"bankName"`
+  BankBalance float64 `json:"bankBalance"`
+  LoanedAmount float64 `json:"loanedAmount"`  
+}
+
 var buyerNameKey string="buyerName"
 var supplierNameKey string="supplierName"
 var bankNameKey string="bankName"
@@ -55,10 +76,12 @@ func (t *SupplierChaincode) Invoke (stub shim.ChaincodeStubInterface, function s
 
   if function=="init" {
     return t.Init(stub,function,args)
-  } else if function=="makeOrder" {
+  } else if function=="makeOrderDetailsinInvoice" {
     return t.MakeOrderinInvoice(stub,args)
-  } else if function=="supplyDetails" {
+  } else if function=="supplyDetailsinInvoice" {
     return t.SupplyDetailsinInvoice(stub, args)
+  } else if function=="bankDetailsinInvoice" {
+    return t.BankDetailsinInvoice(stub,args)
   }
 
   return nil,errors.New("No function invoked")
@@ -70,7 +93,7 @@ func (t *SupplierChaincode) MakeOrderinInvoice (stub shim.ChaincodeStubInterface
   if len(args)!=3 {
     return nil, errors.New("number of arguments are wrong")
   }
-  str:=`{"order_id": "`+args[0]+`", "product_name": "`+args[1]+`", "quantity": `+args[2]+`, "unit_cost":`+strconv.Itoa(0)+`,"delivery_date":"`+`null`+`","interest":`+strconv.Itoa(0)+`}`
+  str:=`{"order_id": "`+args[0]+`", "product_name": "`+args[1]+`", "quantity": `+args[2]+`, "total_payment":`+strconv.Itoa(0)+`,"delivery_date":"`+`null`+`","interest":`+strconv.Itoa(0)+`}`
 	err=stub.PutState(args[0],[]byte(str))
   if err!=nil {
     return nil,errors.New("error created in order committed")
@@ -93,9 +116,9 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice (stub shim.ChaincodeStubInter
     return nil, err
   }
 
-  inv.Unit_cost, _=strconv.Atoi(args[1])
+  inv.Total_payment, _=strconv.Atoi(args[1])
   inv.Delivery_date=args[2]
-  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "unit_cost":`+strconv.Itoa(inv.Unit_cost)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 32)+`}`
+  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "total_payment"`+strconv.Itoa(inv.Total_payment)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 32)+`}`
   err=stub.PutState(inv.Order_id,[]byte(str))
   if err!=nil {
     return nil, errors.New("state not comitted")
@@ -103,6 +126,36 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice (stub shim.ChaincodeStubInter
   return nil,nil
 
 }
+func (t *SupplierChaincode) BankDetailsinInvoice (stub shim.ChaincodeStubInterface,args []string) ([]byte,error) {
+
+  var err error
+  if len(args)!=2 {
+    return nil,errors.New("number of arguments are wrong")
+  }
+
+  valAsbytes,err := stub.GetState(args[0])
+  if err!=nil {
+    return nil, err
+  }
+  inv:=invoice{}
+  err=json.Unmarshal(valAsbytes,&inv)
+  if err!=nil {
+    return nil, err
+  }
+  inv.Interest,err =strconv.ParseFloat(args[1], 32)
+  if err!=nil {
+    return nil, err
+  }
+  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "total_payment":`+strconv.Itoa(inv.Total_payment)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 32)+`}`
+  err=inv.PutState(args[0],[]byte(str))
+  if err!=nil {
+    return nil, err
+  }
+  return nil, nil
+}
+
+
+
 func (t *SupplierChaincode) Query (stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
   if function=="readOrder" {
