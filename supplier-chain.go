@@ -147,7 +147,7 @@ func (t *SupplierChaincode) BankDetailsinInvoice (stub shim.ChaincodeStubInterfa
     return nil, err
   }
   str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "total_payment":`+strconv.Itoa(inv.Total_payment)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 32)+`}`
-  err=inv.PutState(args[0],[]byte(str))
+  err=stub.PutState(args[0],[]byte(str))
   if err!=nil {
     return nil, err
   }
