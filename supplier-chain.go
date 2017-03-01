@@ -14,7 +14,7 @@ type invoice struct{
   Quantity int `json:"quantity"`
   Unit_cost int `json:"unit_cost"`
   Delivery_date string `json:"delivery_date"`
-  Interest float32 `json:"interest"`
+  Interest float64 `json:"interest"`
 }
 var buyerNameKey string="buyerName"
 var supplierNameKey string="supplierName"
