@@ -248,7 +248,7 @@ func (t *SupplierChaincode) addBalanceinBuyer(stub shim.ChaincodeStubInterface, 
 	return nil, nil
 }
 */
-//Queries--
+//Queries---
 func (t *SupplierChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "read" {
