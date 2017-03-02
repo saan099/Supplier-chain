@@ -165,7 +165,7 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `"goodsRecieved":"null"`
+	str := `{"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `"goodsRecieved":"null"}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -178,7 +178,7 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `"goodsDelivered":"null"`
+	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `"goodsDelivered":"null"}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, arg
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `"loanedAmount":0`
+	str := `{"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `"loanedAmount":0}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -199,6 +199,56 @@ func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, arg
 	return nil, nil
 }
 
+func (t *SupplierChaincode) addBalanceinBank(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	if len(args) != 2 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	valAsbytes, err := stub.GetState(args[0])
+	if err != nil {
+		return nil, err
+	}
+	acc := bank{}
+	err = json.Unmarshal(valAsbytes, &acc)
+	if err != nil {
+		return nil, err
+	}
+	addedAmout, _ := strconv.ParseFloat(args[1], 32)
+	acc.BankBalance += addedAmout
+	str := `{"bankId":"` + acc.BankId + `","bankName":"` + acc.BankName + `","bankBalance":` + strconv.FormatFloat(acc.BankBalance, 'f', -1, 32) + `"loanedAmount":` + strconv.FormatFloat(acc.LoanedAmount, 'f', -1, 32) + `}`
+	err = stub.PutState(args[0], []byte(str))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+/*
+func (t *SupplierChaincode) addBalanceinBuyer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	if len(args) != 2 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	valAsbytes, err := stub.GetState(args[0])
+	if err != nil {
+		return nil, err
+	}
+	acc := buyer{}
+	err = json.Unmarshal(valAsbytes, &acc)
+	if err != nil {
+		return nil, err
+	}
+	addedAmout, _ := strconv.ParseFloat(args[1], 32)
+	acc.BankBalance += addedAmout
+	str := `{"buyerId":"` + acc.BankId + `","buyerName":"` + acc.BankName + `","buyerBalance":` + strconv.FormatFloat(acc.BuyerBalance, 'f', -1, 32) + `"goodsRecieved":"` + acc.GoodsRecieved + `"}`
+	err = stub.PutState(args[0], []byte(str))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+*/
+//Queries--
 func (t *SupplierChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "read" {
