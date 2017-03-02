@@ -21,7 +21,7 @@ type buyer struct {
   BuyerId string `json:"buyerId"`
   BuyerName string `json:"buyerName"`
   BuyerBalance float64 `json:"buyerBalance"`
-  GoodsRecieved string `json:"goodsRecieved"` 
+  GoodsRecieved string `json:"goodsRecieved"`
 }
 
 type supplier struct {
@@ -34,7 +34,7 @@ type bank struct {
   BankId string `json:"bankId"`
   BankName string `json:"bankName"`
   BankBalance float64 `json:"bankBalance"`
-  LoanedAmount float64 `json:"loanedAmount"`  
+  LoanedAmount float64 `json:"loanedAmount"`
 }
 
 var buyerNameKey string="buyerName"
@@ -93,7 +93,7 @@ func (t *SupplierChaincode) MakeOrderinInvoice (stub shim.ChaincodeStubInterface
   if len(args)!=3 {
     return nil, errors.New("number of arguments are wrong")
   }
-  str:=`{"order_id": "`+args[0]+`", "product_name": "`+args[1]+`", "quantity": `+args[2]+`, "total_payment":`+strconv.Itoa(0)+`,"delivery_date":"`+`null`+`","interest":`+strconv.Itoa(0)+`}`
+  str:=`{"order_id": "`+args[0]+`", "product_name": "`+args[1]+`", "quantity": `+args[2]+`, "total_payment":`+strconv.Itoa(0)+`,"delivery_date":"`+`null`+`","interest":0.0}`
 	err=stub.PutState(args[0],[]byte(str))
   if err!=nil {
     return nil,errors.New("error created in order committed")
@@ -118,7 +118,7 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice (stub shim.ChaincodeStubInter
 
   inv.Total_payment, _=strconv.Atoi(args[1])
   inv.Delivery_date=args[2]
-  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "total_payment"`+strconv.Itoa(inv.Total_payment)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 32)+`}`
+  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "total_payment"`+strconv.Itoa(inv.Total_payment)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'f', -1, 32)+`}`
   err=stub.PutState(inv.Order_id,[]byte(str))
   if err!=nil {
     return nil, errors.New("state not comitted")
@@ -146,7 +146,7 @@ func (t *SupplierChaincode) BankDetailsinInvoice (stub shim.ChaincodeStubInterfa
   if err!=nil {
     return nil, err
   }
-  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "total_payment":`+strconv.Itoa(inv.Total_payment)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'E', -1, 32)+`}`
+  str:=`{"order_id": "`+inv.Order_id+`", "product_name": "`+inv.Product_name+`", "quantity": `+strconv.Itoa(inv.Quantity)+`, "total_payment":`+strconv.Itoa(inv.Total_payment)+`,"delivery_date":"`+inv.Delivery_date+`","interest":`+strconv.FormatFloat(inv.Interest, 'f', -1, 32)+`}`
   err=stub.PutState(args[0],[]byte(str))
   if err!=nil {
     return nil, err
@@ -179,4 +179,3 @@ func (t *SupplierChaincode) ReadOrder (stub shim.ChaincodeStubInterface,args []s
    return valAsbytes, nil
 
 }
-
