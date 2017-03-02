@@ -83,6 +83,12 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.SupplyDetailsinInvoice(stub, args)
 	} else if function == "bankDetailsinInvoice" {
 		return t.BankDetailsinInvoice(stub, args)
+	} else if function == "initializeBuyer" {
+		return t.InitializeBuyer(stub, args)
+	} else if function == "initializeSupplier" {
+		return t.InitializeSupplier(stub, args)
+	} else if function == "initializeBank" {
+		return t.InitializeBank(stub, args)
 	}
 
 	return nil, errors.New("No function invoked")
@@ -94,7 +100,7 @@ func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("number of arguments are wrong")
 	}
-	str := `{"order_id": "` + args[0] + `", "product_name": "` + args[1] + `", "quantity": ` + args[2] + `, "total_payment":` + strconv.Itoa(0) + `,"delivery_date":"` + `null` + `","interest":` + strconv.FormatFloat(12.8, 'f', -1, 32) + `}`
+	str := `{"order_id": "` + args[0] + `", "product_name": "` + args[1] + `", "quantity": ` + args[2] + `, "total_payment":` + strconv.Itoa(0) + `,"delivery_date":"` + `null` + `","interest":` + strconv.FormatFloat(0.0, 'f', -1, 32) + `}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, errors.New("error created in order committed")
@@ -154,17 +160,56 @@ func (t *SupplierChaincode) BankDetailsinInvoice(stub shim.ChaincodeStubInterfac
 	return nil, nil
 }
 
+func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	if len(args) != 3 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	str := `"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `"goodsRecieved":"null"`
+	err = stub.PutState(args[0], []byte(str))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	if len(args) != 3 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	str := `"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `"goodsDelivered":"null"`
+	err = stub.PutState(args[0], []byte(str))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+	if len(args) != 3 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	str := `"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `"loanedAmount":0`
+	err = stub.PutState(args[0], []byte(str))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 func (t *SupplierChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
-	if function == "readOrder" {
-		return t.ReadOrder(stub, args)
+	if function == "read" {
+		return t.Read(stub, args)
 	}
 
 	return nil, errors.New("quey didnt meet any function")
 
 }
 
-func (t *SupplierChaincode) ReadOrder(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SupplierChaincode) Read(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	if len(args) != 1 {
 		return nil, errors.New("Wrong numer of arguments")
