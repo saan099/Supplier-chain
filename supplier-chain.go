@@ -142,7 +142,8 @@ func (t *SupplierChaincode) BankDetailsinInvoice (stub shim.ChaincodeStubInterfa
   if err!=nil {
     return nil, err
   }
-  inv.Interest,err =strconv.ParseFloat(args[1], 32)
+
+  inv.Interest,err =strconv.ParseFloat(args[1], 64)
   if err!=nil {
     return nil, err
   }
