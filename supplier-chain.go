@@ -188,7 +188,10 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":"null"}`
+	var goodsDelivered []string
+	goodsAsbytes, _ := json.Marshal(goodsDelivered)
+
+	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":"` + string(goodsAsbytes[:]) + `"}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -275,6 +278,47 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	acc.SupplierBalance += addedAmout
 	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + acc.GoodsDelivered + `"}`
 	err = stub.PutState(args[0], []byte(str))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+	if len(args) != 2 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	supplierId := args[0]
+	orderId := args[1]
+
+	supplierDetailsAsbytes, err := stub.GetState(supplierId)
+	if err != nil {
+		return nil, err
+	}
+	orderDetailsAsbytes, err := stub.GetState(orderId)
+	if err != nil {
+		return nil, err
+	}
+	order := invoice{}
+	err = json.Unmarshal(supplierDetailsAsbytes, &order)
+	if err != nil {
+		return nil, err
+	}
+	acc := supplier{}
+	err = json.Unmarshal(supplierDetailsAsbytes, &acc)
+	if err != nil {
+		return nil, err
+	}
+	var addedGood []string
+	err = json.Unmarshal([]byte(acc.GoodsDelivered), addedGood)
+	addedGood = append(addedGood, `{"order_id":"`+order.Order_id+`","product_name":"`+order.Product_name+`"}`)
+	goodsAsbytes, _ := json.Marshal(addedGood)
+	acc.GoodsDelivered = string(goodsAsbytes[:])
+	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + acc.GoodsDelivered + `"}`
+
+	err = stub.PutState(supplierId, []byte(str))
 	if err != nil {
 		return nil, err
 	}
