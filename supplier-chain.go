@@ -89,12 +89,12 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.InitializeSupplier(stub, args)
 	} else if function == "initializeBank" {
 		return t.InitializeBank(stub, args)
-	} else if function == "initializeBuyer" {
-		return t.InitializeBuyer(stub, args)
-	} else if function == "initializeSupplier" {
-		return t.InitializeSupplier(stub, args)
-	} else if function == "initializeBank" {
-		return t.InitializeBank(stub, args)
+	} else if function == "addBalanceinBank" {
+		return t.addBalanceinBank(stub, args)
+	} else if function == "addBalanceinSupplier" {
+		return t.addBalanceinSupplier(stub, args)
+	} else if function == "addBalanceinBuyer" {
+		return t.addBalanceinBuyer(stub, args)
 	}
 
 	return nil, errors.New("No function invoked")
