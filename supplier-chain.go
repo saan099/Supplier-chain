@@ -314,7 +314,7 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 		return nil, err
 	}
 	var addedGood []string
-	err = json.Unmarshal([]byte(acc.GoodsDelivered), addedGood)
+	err = json.Unmarshal([]byte(acc.GoodsDelivered), &addedGood)
 	addedGood = append(addedGood, `{"order_id":"`+order.Order_id+`","product_name":"`+order.Product_name+`"}`)
 	goodsAsbytes, _ := json.Marshal(addedGood)
 	acc.GoodsDelivered = string(goodsAsbytes[:])
