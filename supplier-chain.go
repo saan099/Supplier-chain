@@ -184,7 +184,7 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `"goodsDelivered":"null"}`
+	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":"null"}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -197,7 +197,7 @@ func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, arg
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `{"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `"loanedAmount":0}`
+	str := `{"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `,"loanedAmount":0}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -221,7 +221,7 @@ func (t *SupplierChaincode) addBalanceinBank(stub shim.ChaincodeStubInterface, a
 	}
 	addedAmout, _ := strconv.ParseFloat(args[1], 32)
 	acc.BankBalance += addedAmout
-	str := `{"bankId":"` + acc.BankId + `","bankName":"` + acc.BankName + `","bankBalance":` + strconv.FormatFloat(acc.BankBalance, 'f', -1, 32) + `"loanedAmount":` + strconv.FormatFloat(acc.LoanedAmount, 'f', -1, 32) + `}`
+	str := `{"bankId":"` + acc.BankId + `","bankName":"` + acc.BankName + `","bankBalance":` + strconv.FormatFloat(acc.BankBalance, 'f', -1, 32) + `,"loanedAmount":` + strconv.FormatFloat(acc.LoanedAmount, 'f', -1, 32) + `}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
