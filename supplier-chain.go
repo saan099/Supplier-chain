@@ -219,7 +219,7 @@ func (t *SupplierChaincode) addBalanceinBank(stub shim.ChaincodeStubInterface, a
 	if err != nil {
 		return nil, err
 	}
-	addedAmout, _ := strconv.ParseFloat(args[1], 32)
+	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.BankBalance += addedAmout
 	str := `{"bankId":"` + acc.BankId + `","bankName":"` + acc.BankName + `","bankBalance":` + strconv.FormatFloat(acc.BankBalance, 'f', -1, 32) + `,"loanedAmount":` + strconv.FormatFloat(acc.LoanedAmount, 'f', -1, 32) + `}`
 	err = stub.PutState(args[0], []byte(str))
@@ -243,7 +243,7 @@ func (t *SupplierChaincode) addBalanceinBuyer(stub shim.ChaincodeStubInterface, 
 	if err != nil {
 		return nil, err
 	}
-	addedAmout, _ := strconv.ParseFloat(args[1], 32)
+	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.BuyerBalance += addedAmout
 	str := `{"buyerId":"` + acc.BuyerId + `","buyerName":"` + acc.BuyerName + `","buyerBalance":` + strconv.FormatFloat(acc.BuyerBalance, 'f', -1, 32) + `,"goodsRecieved":"` + acc.GoodsRecieved + `"}`
 	err = stub.PutState(args[0], []byte(str))
@@ -267,7 +267,7 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	if err != nil {
 		return nil, err
 	}
-	addedAmout, _ := strconv.ParseFloat(args[1], 32)
+	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.SupplierBalance += addedAmout
 	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + acc.GoodsDelivered + `"}`
 	err = stub.PutState(args[0], []byte(str))
