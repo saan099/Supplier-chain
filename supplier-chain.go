@@ -171,7 +171,11 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `{"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `,"goodsRecieved":"null"}`
+	var goodsRecieved []string
+	goodsAsbytes, _ := json.Marshal(goodsRecieved)
+
+	str := `{"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `,"goodsRecieved":"` + string(goodsAsbytes[:]) + `"}`
+
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
