@@ -302,7 +302,7 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 		return nil, err
 	}
 	order := invoice{}
-	err = json.Unmarshal(supplierDetailsAsbytes, &order)
+	err = json.Unmarshal(orderDetailsAsbytes, &order)
 	if err != nil {
 		return nil, err
 	}
