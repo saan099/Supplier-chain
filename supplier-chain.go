@@ -304,19 +304,20 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 		return nil, err
 	}
 	order := invoice{}
-	err = json.Unmarshal(orderDetailsAsbytes, &order)
+	a, _ := strconv.Unquote(string(supplierDetailsAsbytes))
+	err = json.Unmarshal([]byte(a), &order)
 	if err != nil {
 		return nil, err
 	}
 	acc := supplier{}
-
-	err = json.Unmarshal([]byte(supplierDetailsAsbytes), &acc)
+	s, _ := strconv.Unquote(string(supplierDetailsAsbytes))
+	err = json.Unmarshal([]byte(s), &acc)
 	if err != nil {
 		return nil, err
 	}
 	var addedGood []string
-	s, _ := strconv.Unquote(string(orderDetailsAsbytes))
-	err = json.Unmarshal([]byte(s), &addedGood)
+
+	err = json.Unmarshal([]byte(orderDetailsAsbytes), &addedGood)
 	addedGood = append(addedGood, `{"order_id":"`+order.Order_id+`","product_name":"`+order.Product_name+`"}`)
 	goodsAsbytes, _ := json.Marshal(addedGood)
 	acc.GoodsDelivered = string(goodsAsbytes[:])
