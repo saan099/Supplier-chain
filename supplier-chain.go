@@ -304,7 +304,7 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 		return nil, err
 	}
 	order := invoice{}
-	a, _ := strconv.Unquote(string(supplierDetailsAsbytes))
+	a, _ := strconv.Unquote(string(orderDetailsAsbytes))
 	err = json.Unmarshal([]byte(a), &order)
 	if err != nil {
 		return nil, err
