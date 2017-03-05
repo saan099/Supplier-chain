@@ -193,7 +193,7 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	var goodsDelivered []string
 	goodsAsbytes, _ := json.Marshal(goodsDelivered)
 
-	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":"` + string(goodsAsbytes[:]) + `"}`
+	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -279,7 +279,7 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.SupplierBalance += addedAmout
 
-	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + acc.GoodsDelivered + `"}`
+	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + acc.GoodsDelivered + `}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -322,7 +322,7 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 	addedGood = append(addedGood, order.Order_id)
 	goodsAsbytes, _ := json.Marshal(addedGood)
 
-	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + string(goodsAsbytes[:]) + `"}`
+	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
 
 	err = stub.PutState(supplierId, []byte(str))
 	if err != nil {
