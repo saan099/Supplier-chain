@@ -26,10 +26,10 @@ type buyer struct {
 }
 
 type supplier struct {
-	SupplierId      string    `json:"supplierId"`
-	SupplierName    string    `json:"supplierName"`
-	SupplierBalance float64   `json:"supplierBalance"`
-	GoodsDelivered  []invoice `json:"goodsDelivered"`
+	SupplierId      string  `json:"supplierId"`
+	SupplierName    string  `json:"supplierName"`
+	SupplierBalance float64 `json:"supplierBalance"`
+	GoodsDelivered  string  `json:"goodsDelivered"`
 }
 type bank struct {
 	BankId       string  `json:"bankId"`
@@ -190,7 +190,7 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	var goodsDelivered []invoice
+	var goodsDelivered []string
 	goodsAsbytes, _ := json.Marshal(goodsDelivered)
 
 	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":"` + string(goodsAsbytes[:]) + `"}`
@@ -278,8 +278,8 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	}
 	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.SupplierBalance += addedAmout
-	del, _ := json.Marshal(acc.GoodsDelivered)
-	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + string(del[:]) + `"}`
+
+	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + acc.GoodsDelivered + `"}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -316,10 +316,10 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return nil, err
 	}
-	var addedGood []invoice
-	del, _ := json.Marshal(acc.GoodsDelivered)
-	err = json.Unmarshal(del, &addedGood)
-	addedGood = append(addedGood, order)
+	var addedGood []string
+	err = json.Unmarshal([]byte(acc.GoodsDelivered), &addedGood)
+
+	addedGood = append(addedGood, order.Order_id)
 	goodsAsbytes, _ := json.Marshal(addedGood)
 
 	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":"` + string(goodsAsbytes[:]) + `"}`
