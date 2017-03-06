@@ -325,15 +325,15 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return nil, err
 	}
-	var addedGood []string
+	acc.GoodsDelivered = append(acc.GoodsDelivered, order)
 	//err = json.Unmarshal([]byte(acc.GoodsDelivered), &addedGood)
 
-	addedGood = append(addedGood, order.Order_id)
-	goodsAsbytes, _ := json.Marshal(addedGood)
+	//addedGood = append(addedGood, order.Order_id)
+	//goodsAsbytes, _ := json.Marshal(addedGood)
 
-	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
-
-	err = stub.PutState(supplierId, []byte(str))
+	//str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
+	jsonAsbytes, err := json.Marshal(acc)
+	err = stub.PutState(supplierId, jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
