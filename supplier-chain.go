@@ -42,6 +42,7 @@ type bank struct {
 type loans struct {
 	Orders     []order `json:"orders"`
 	LoanAmount float64 `json:"loanAmount"`
+	Status     string  `json:"status"`
 }
 
 var buyerNameKey string = "buyerName"
@@ -105,6 +106,8 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.DeliverGoods(stub, args)
 	} else if function == "recieveGoods" {
 		return t.RecieveGoods(stub, args)
+	} else if function == "generateInvoice" {
+		return t.invoiceGeneration(stub, args)
 	}
 
 	return nil, errors.New("No function invoked")
@@ -394,6 +397,39 @@ func (t *SupplierChaincode) RecieveGoods(stub shim.ChaincodeStubInterface, args 
 	}
 	return nil, nil
 
+}
+
+func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+	var i int
+	if len(args) < 4 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	loan := loans{}
+	var orders []order
+	numberOfOrders, err := strconv.Atoi(args[0])
+
+	for i = 0; i < numberOfOrders; i++ {
+		o := order{}
+		valAsbytes, err := stub.GetState(args[i+1])
+		err = json.Unmarshal(valAsbytes, o)
+		loan.Orders = append(loan.Orders, o)
+	}
+	i = i + 1
+	loan.LoanAmount, _ = strconv.ParseFloat(args[i], 64)
+	loan.Status = "pending"
+	acc := bank{}
+	i = i + 1
+	valueAsbytes, err := stub.GetState(args[i])
+	err = json.Unmarshal(valueAsbytes, &acc)
+	acc.Loans = append(acc.Loans, loan)
+	valAsbytes, err := json.Marshal(acc)
+	err = stub.PutState(args[i], valAsbytes)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 //Queries---
