@@ -453,6 +453,7 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 	loanId := args[2]
 	bankAcc := bank{}
 	bankAsbytes, err := stub.GetState(bankId)
+	err = json.Unmarshal(bankAsbytes, &bankAcc)
 	for i := range bankAcc.Loans {
 		if bankAcc.Loans[i].LoanId == loanId {
 			bankAcc.LoanedAmount += bankAcc.Loans[i].LoanAmount
