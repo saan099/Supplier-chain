@@ -32,12 +32,11 @@ type supplier struct {
 	GoodsDelivered  []order `json:"goodsDelivered"`
 }
 type bank struct {
-	BankId        string  `json:"bankId"`
-	BankName      string  `json:"bankName"`
-	BankBalance   float64 `json:"bankBalance"`
-	LoansPending  []loans `json:"loansPending"`
-	LoansAccepted []loans `json:"loansAccepted"`
-	LoanedAmount  float64 `json:"loanedAmount"`
+	BankId       string  `json:"bankId"`
+	BankName     string  `json:"bankName"`
+	BankBalance  float64 `json:"bankBalance"`
+	Loans        []loans `json:"loans"`
+	LoanedAmount float64 `json:"loanedAmount"`
 }
 
 type loans struct {
@@ -230,13 +229,12 @@ func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, arg
 	}
 	//str := `{"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `,"loanedAmount":0}`
 	var l []loans
-	b := bank{}
-	b.BankId = args[0]
-	b.BankName = args[1]
-	b.BankBalance, _ = strconv.ParseFloat(args[2], 64)
-	b.LoansAccepted = l
-	b.LoansPending = l
-	jsonAsbytes, _ := json.Marshal(b)
+	acc := bank{}
+	acc.BankId = args[0]
+	acc.BankName = args[1]
+	acc.BankBalance, _ = strconv.ParseFloat(args[2], 64)
+	acc.Loans = l
+	jsonAsbytes, _ := json.Marshal(acc)
 	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
@@ -260,8 +258,9 @@ func (t *SupplierChaincode) addBalanceinBank(stub shim.ChaincodeStubInterface, a
 	}
 	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.BankBalance += addedAmout
-	str := `{"bankId":"` + acc.BankId + `","bankName":"` + acc.BankName + `","bankBalance":` + strconv.FormatFloat(acc.BankBalance, 'f', -1, 32) + `,"loanedAmount":` + strconv.FormatFloat(acc.LoanedAmount, 'f', -1, 32) + `}`
-	err = stub.PutState(args[0], []byte(str))
+	jsonAsbytes, _ := json.Marshal(acc)
+	//str := `{"bankId":"` + acc.BankId + `","bankName":"` + acc.BankName + `","bankBalance":` + strconv.FormatFloat(acc.BankBalance, 'f', -1, 32) + `,"loanedAmount":` + strconv.FormatFloat(acc.LoanedAmount, 'f', -1, 32) + `}`
+	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
