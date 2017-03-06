@@ -198,7 +198,7 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	acc.SupplierBalance, _ = strconv.ParseFloat(args[2], 64)
 
 	var goodsDelivered []invoice
-	goodsAsbytes, _ := json.Marshal(goodsDelivered)
+	//goodsAsbytes, _ := json.Marshal(goodsDelivered)
 	acc.GoodsDelivered = goodsDelivered
 	jsonAsbytes, err := json.Marshal(acc)
 
