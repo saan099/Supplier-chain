@@ -173,7 +173,7 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	var goodsRecieved = invoice{}
+
 	var acc = buyer{}
 	acc.BuyerId = args[0]
 	acc.BuyerName = args[1]
