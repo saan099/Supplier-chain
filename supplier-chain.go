@@ -111,6 +111,8 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.invoiceGeneration(stub, args)
 	} else if function == "loanAmount" {
 		return t.LoanAmount(stub, args)
+	} else if function == "payToBank" {
+		return t.PayToBank(stub, args)
 	}
 
 	return nil, errors.New("No function invoked")
