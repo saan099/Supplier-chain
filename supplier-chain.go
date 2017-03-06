@@ -97,6 +97,8 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.addBalanceinBuyer(stub, args)
 	} else if function == "deliverGoods" {
 		return t.DeliverGoods(stub, args)
+	} else if function == "recieveGoods" {
+		return t.RecieveGoods(stub, args)
 	}
 
 	return nil, errors.New("No function invoked")
