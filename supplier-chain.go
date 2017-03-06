@@ -494,11 +494,13 @@ func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []s
 	bankId := args[1]
 	amountToPay, _ := strconv.ParseFloat(args[2], 64)
 
-	supplierAsbytes, err := stub.GetState(buyerId)
+	buyerAsbytes, err := stub.GetState(buyerId)
 	bankAsbytes, err := stub.GetState(bankId)
 
 	buyerAcc := buyer{}
 	bankAcc := bank{}
+	err = json.Unmarshal(buyerAsbytes, &buyerAcc)
+	err = json.Unmarshal(bankAsbytes, &bankAcc)
 
 	buyerAcc.BuyerBalance -= amountToPay
 	bankAcc.BankBalance += amountToPay
