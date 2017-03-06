@@ -186,27 +186,27 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 }
 
 func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	/*
-		var err error
-		if len(args) != 3 {
-			return nil, errors.New("wrong number of arguments")
-		}
 
-		var acc = supplier{}
-		acc.SupplierId = args[0]
-		acc.SupplierName = args[1]
-		acc.SupplierBalance, _ = strconv.ParseFloat(args[2], 64)
+	var err error
+	if len(args) != 3 {
+		return nil, errors.New("wrong number of arguments")
+	}
 
-		var goodsDelivered []invoice
-		goodsAsbytes, _ := json.Marshal(goodsDelivered)
-		acc.GoodsDelivered = goodsDelivered
-		jsonAsbytes, err := json.Marshal(acc)
+	var acc = supplier{}
+	acc.SupplierId = args[0]
+	acc.SupplierName = args[1]
+	acc.SupplierBalance, _ = strconv.ParseFloat(args[2], 64)
 
-		str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
-		err = stub.PutState(args[0], jsonAsbytes)
-		if err != nil {
-			return nil, err
-		}*/
+	var goodsDelivered []invoice
+	goodsAsbytes, _ := json.Marshal(goodsDelivered)
+	acc.GoodsDelivered = goodsDelivered
+	jsonAsbytes, err := json.Marshal(acc)
+
+	//str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
+	err = stub.PutState(args[0], jsonAsbytes)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
