@@ -287,9 +287,10 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	}
 	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.SupplierBalance += addedAmout
-	del, _ := json.Marshal(acc.GoodsDelivered)
-	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(del[:]) + `}`
-	err = stub.PutState(args[0], []byte(str))
+	jsonAsbytes, _ := json.Marshal(acc)
+
+	//str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(del[:]) + `}`
+	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
