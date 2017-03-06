@@ -19,10 +19,10 @@ type invoice struct {
 }
 
 type buyer struct {
-	BuyerId       string  `json:"buyerId"`
-	BuyerName     string  `json:"buyerName"`
-	BuyerBalance  float64 `json:"buyerBalance"`
-	GoodsRecieved string  `json:"goodsRecieved"`
+	BuyerId       string    `json:"buyerId"`
+	BuyerName     string    `json:"buyerName"`
+	BuyerBalance  float64   `json:"buyerBalance"`
+	GoodsRecieved []invoice `json:"goodsRecieved"`
 }
 
 type supplier struct {
@@ -173,12 +173,18 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	var goodsRecieved []string
-	goodsAsbytes, _ := json.Marshal(goodsRecieved)
+	var goodsRecieved = invoice{}
+	var acc = buyer{}
+	acc.BuyerId = args[0]
+	acc.BuyerName = args[1]
+	acc.BuyerBalance, _ = strconv.ParseFloat(args[2], 64)
+	var goodsrecieved []invoice
+	acc.GoodsRecieved = goodsrecieved
+	jsonAsbytes, _ := json.Marshal(acc)
 
-	str := `{"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `,"goodsRecieved":"` + string(goodsAsbytes[:]) + `"}`
+	//str := `{"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `,"goodsRecieved":"` + string(goodsAsbytes[:]) + `"}`
 
-	err = stub.PutState(args[0], []byte(str))
+	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
@@ -198,11 +204,9 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	acc.SupplierBalance, _ = strconv.ParseFloat(args[2], 64)
 
 	var goodsDelivered []invoice
-	//goodsAsbytes, _ := json.Marshal(goodsDelivered)
 	acc.GoodsDelivered = goodsDelivered
 	jsonAsbytes, err := json.Marshal(acc)
 
-	//str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
 	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
@@ -261,10 +265,11 @@ func (t *SupplierChaincode) addBalanceinBuyer(stub shim.ChaincodeStubInterface, 
 	if err != nil {
 		return nil, err
 	}
-	addedAmout, _ := strconv.ParseFloat(args[1], 64)
-	acc.BuyerBalance += addedAmout
-	str := `{"buyerId":"` + acc.BuyerId + `","buyerName":"` + acc.BuyerName + `","buyerBalance":` + strconv.FormatFloat(acc.BuyerBalance, 'f', -1, 32) + `,"goodsRecieved":"` + acc.GoodsRecieved + `"}`
-	err = stub.PutState(args[0], []byte(str))
+	addedAmount, _ := strconv.ParseFloat(args[1], 64)
+	acc.BuyerBalance += addedAmount
+	jsonAsbytes, err := json.Marshal(acc)
+	//str := `{"buyerId":"` + acc.BuyerId + `","buyerName":"` + acc.BuyerName + `","buyerBalance":` + strconv.FormatFloat(acc.BuyerBalance, 'f', -1, 32) + `,"goodsRecieved":"` + acc.GoodsRecieved + `"}`
+	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +294,6 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	acc.SupplierBalance += addedAmout
 	jsonAsbytes, _ := json.Marshal(acc)
 
-	//str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(del[:]) + `}`
 	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
@@ -327,18 +331,53 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 		return nil, err
 	}
 	acc.GoodsDelivered = append(acc.GoodsDelivered, order)
-	//err = json.Unmarshal([]byte(acc.GoodsDelivered), &addedGood)
 
-	//addedGood = append(addedGood, order.Order_id)
-	//goodsAsbytes, _ := json.Marshal(addedGood)
-
-	//str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
 	jsonAsbytes, err := json.Marshal(acc)
 	err = stub.PutState(supplierId, jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
 	return nil, nil
+}
+
+func (t *SupplierChaincode) RecieveGoods(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	var err error
+	if len(args) != 2 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	buyerId := args[0]
+	orderId := args[1]
+
+	buyerDetailsAsbytes, err := stub.GetState(buyerId)
+	if err != nil {
+		return nil, err
+	}
+	orderDetailsAsbytes, err := stub.GetState(orderId)
+	if err != nil {
+		return nil, err
+	}
+	order := invoice{}
+
+	err = json.Unmarshal(orderDetailsAsbytes, &order)
+	if err != nil {
+		return nil, err
+	}
+	acc := buyer{}
+
+	err = json.Unmarshal(buyerDetailsAsbytes, &acc)
+	if err != nil {
+		return nil, err
+	}
+	acc.GoodsRecieved = append(acc.GoodsRecieved, order)
+
+	jsonAsbytes, err := json.Marshal(acc)
+	err = stub.PutState(buyerId, jsonAsbytes)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+
 }
 
 //Queries---
