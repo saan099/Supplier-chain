@@ -9,7 +9,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-type invoice struct {
+type order struct {
 	Order_id      string  `json:"order_id"`
 	Product_name  string  `json:"product_name"`
 	Quantity      int     `json:"quantity"`
@@ -19,23 +19,30 @@ type invoice struct {
 }
 
 type buyer struct {
-	BuyerId       string    `json:"buyerId"`
-	BuyerName     string    `json:"buyerName"`
-	BuyerBalance  float64   `json:"buyerBalance"`
-	GoodsRecieved []invoice `json:"goodsRecieved"`
+	BuyerId       string  `json:"buyerId"`
+	BuyerName     string  `json:"buyerName"`
+	BuyerBalance  float64 `json:"buyerBalance"`
+	GoodsRecieved []order `json:"goodsRecieved"`
 }
 
 type supplier struct {
-	SupplierId      string    `json:"supplierId"`
-	SupplierName    string    `json:"supplierName"`
-	SupplierBalance float64   `json:"supplierBalance"`
-	GoodsDelivered  []invoice `json:"goodsDelivered"`
+	SupplierId      string  `json:"supplierId"`
+	SupplierName    string  `json:"supplierName"`
+	SupplierBalance float64 `json:"supplierBalance"`
+	GoodsDelivered  []order `json:"goodsDelivered"`
 }
 type bank struct {
-	BankId       string  `json:"bankId"`
-	BankName     string  `json:"bankName"`
-	BankBalance  float64 `json:"bankBalance"`
-	LoanedAmount float64 `json:"loanedAmount"`
+	BankId        string  `json:"bankId"`
+	BankName      string  `json:"bankName"`
+	BankBalance   float64 `json:"bankBalance"`
+	LoansPending  []loans `json:"loansPending"`
+	LoansAccepted []loans `json:"loansAccepted"`
+	LoanedAmount  float64 `json:"loanedAmount"`
+}
+
+type loans struct {
+	Orders     []order `json:"orders"`
+	LoanAmount float64 `json:"loanAmount"`
 }
 
 var buyerNameKey string = "buyerName"
@@ -127,7 +134,7 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice(stub shim.ChaincodeStubInterf
 	if err != nil {
 		return nil, errors.New("state not found")
 	}
-	inv := invoice{}
+	inv := order{}
 	err = json.Unmarshal(valAsbytes, &inv)
 	if err != nil {
 		return nil, err
@@ -154,7 +161,7 @@ func (t *SupplierChaincode) BankDetailsinInvoice(stub shim.ChaincodeStubInterfac
 	if err != nil {
 		return nil, err
 	}
-	inv := invoice{}
+	inv := order{}
 	err = json.Unmarshal(valAsbytes, &inv)
 	if err != nil {
 		return nil, err
@@ -180,7 +187,7 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 	acc.BuyerId = args[0]
 	acc.BuyerName = args[1]
 	acc.BuyerBalance, _ = strconv.ParseFloat(args[2], 64)
-	var goodsrecieved []invoice
+	var goodsrecieved []order
 	acc.GoodsRecieved = goodsrecieved
 	jsonAsbytes, _ := json.Marshal(acc)
 
@@ -205,7 +212,7 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	acc.SupplierName = args[1]
 	acc.SupplierBalance, _ = strconv.ParseFloat(args[2], 64)
 
-	var goodsDelivered []invoice
+	var goodsDelivered []order
 	acc.GoodsDelivered = goodsDelivered
 	jsonAsbytes, err := json.Marshal(acc)
 
@@ -221,8 +228,16 @@ func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, arg
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	str := `{"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `,"loanedAmount":0}`
-	err = stub.PutState(args[0], []byte(str))
+	//str := `{"bankId":"` + args[0] + `","bankName":"` + args[1] + `","bankBalance":` + args[2] + `,"loanedAmount":0}`
+	var l []loans
+	b := bank{}
+	b.BankId = args[0]
+	b.BankName = args[1]
+	b.BankBalance, _ = strconv.ParseFloat(args[2], 64)
+	b.LoansAccepted = l
+	b.LoansPending = l
+	jsonAsbytes, _ := json.Marshal(b)
+	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
@@ -320,9 +335,9 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return nil, err
 	}
-	order := invoice{}
+	o := order{}
 
-	err = json.Unmarshal(orderDetailsAsbytes, &order)
+	err = json.Unmarshal(orderDetailsAsbytes, &o)
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +347,7 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return nil, err
 	}
-	acc.GoodsDelivered = append(acc.GoodsDelivered, order)
+	acc.GoodsDelivered = append(acc.GoodsDelivered, o)
 
 	jsonAsbytes, err := json.Marshal(acc)
 	err = stub.PutState(supplierId, jsonAsbytes)
@@ -359,9 +374,9 @@ func (t *SupplierChaincode) RecieveGoods(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return nil, err
 	}
-	order := invoice{}
+	o := order{}
 
-	err = json.Unmarshal(orderDetailsAsbytes, &order)
+	err = json.Unmarshal(orderDetailsAsbytes, &o)
 	if err != nil {
 		return nil, err
 	}
@@ -371,7 +386,7 @@ func (t *SupplierChaincode) RecieveGoods(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return nil, err
 	}
-	acc.GoodsRecieved = append(acc.GoodsRecieved, order)
+	acc.GoodsRecieved = append(acc.GoodsRecieved, o)
 
 	jsonAsbytes, err := json.Marshal(acc)
 	err = stub.PutState(buyerId, jsonAsbytes)
