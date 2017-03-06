@@ -407,12 +407,15 @@ func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, 
 		return nil, errors.New("wrong number of arguments")
 	}
 	loan := loans{}
-	var orders []order
+
 	numberOfOrders, err := strconv.Atoi(args[0])
 
 	for i = 0; i < numberOfOrders; i++ {
 		o := order{}
-		valAsbytes, err := stub.GetState(args[i+1])
+		valAsbytes, er := stub.GetState(args[i+1])
+		if er != nil {
+			return nil, er
+		}
 		err = json.Unmarshal(valAsbytes, o)
 		loan.Orders = append(loan.Orders, o)
 	}
