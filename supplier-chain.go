@@ -40,6 +40,7 @@ type bank struct {
 }
 
 type loans struct {
+	LoanId     string  `json:"loanId"`
 	Orders     []order `json:"orders"`
 	LoanAmount float64 `json:"loanAmount"`
 	Status     string  `json:"status"`
@@ -108,6 +109,8 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.RecieveGoods(stub, args)
 	} else if function == "generateInvoice" {
 		return t.invoiceGeneration(stub, args)
+	} else if function == "loanAmount" {
+		return t.LoanAmount(stub, args)
 	}
 
 	return nil, errors.New("No function invoked")
@@ -420,8 +423,12 @@ func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, 
 		loan.Orders = append(loan.Orders, o)
 	}
 	i = i + 1
+	loan.LoanId = args[i]
+
+	i = i + 1
 	loan.LoanAmount, _ = strconv.ParseFloat(args[i], 64)
 	loan.Status = "pending"
+
 	acc := bank{}
 	i = i + 1
 	valueAsbytes, err := stub.GetState(args[i])
@@ -432,6 +439,44 @@ func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, 
 	if err != nil {
 		return nil, err
 	}
+	return nil, nil
+}
+
+func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	if len(args) != 3 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	var temp float64
+	supplierId := args[0]
+	bankId := args[1]
+	loanId := args[2]
+	bankAcc := bank{}
+	bankAsbytes, err := stub.GetState(bankId)
+	for i := range bankAcc.Loans {
+		if bankAcc.Loans[i].LoanId == loanId {
+			bankAcc.LoanedAmount += bankAcc.Loans[i].LoanAmount
+			bankAcc.Loans[i].Status = "accepted"
+			temp = bankAcc.Loans[i].LoanAmount
+			bankAcc.LoanedAmount += temp
+			jsonAsbytes, err := json.Marshal(bankAcc)
+			err = stub.PutState(bankId, jsonAsbytes)
+			if err != nil {
+				return nil, err
+			}
+
+			supplierAcc := supplier{}
+			supplierAsbytes, err := stub.GetState(supplierId)
+			err = json.Unmarshal(supplierAsbytes, &supplierAcc)
+			supplierAcc.SupplierBalance += temp
+			jsonAsbyte, err := json.Marshal(supplierAcc)
+			err = stub.PutState(supplierId, jsonAsbyte)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
 	return nil, nil
 }
 
