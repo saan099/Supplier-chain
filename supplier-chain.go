@@ -26,10 +26,10 @@ type buyer struct {
 }
 
 type supplier struct {
-	SupplierId      string  `json:"supplierId"`
-	SupplierName    string  `json:"supplierName"`
-	SupplierBalance float64 `json:"supplierBalance"`
-	GoodsDelivered  string  `json:"goodsDelivered"`
+	SupplierId      string    `json:"supplierId"`
+	SupplierName    string    `json:"supplierName"`
+	SupplierBalance float64   `json:"supplierBalance"`
+	GoodsDelivered  []invoice `json:"goodsDelivered"`
 }
 type bank struct {
 	BankId       string  `json:"bankId"`
@@ -190,11 +190,19 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("wrong number of arguments")
 	}
-	var goodsDelivered []string
-	goodsAsbytes, _ := json.Marshal(goodsDelivered)
 
-	str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
-	err = stub.PutState(args[0], []byte(str))
+	var acc = supplier{}
+	acc.SupplierId = args[0]
+	acc.SupplierName = args[1]
+	acc.SupplierBalance, _ = strconv.ParseFloat(args[2], 64)
+
+	var goodsDelivered []invoice
+	goodsAsbytes, _ := json.Marshal(goodsDelivered)
+	acc.GoodsDelivered = goodsDelivered
+	jsonAsbytes, err := json.Marshal(acc)
+
+	//str := `{"supplierId":"` + args[0] + `","supplierName":"` + args[1] + `","supplierBalance":` + args[2] + `,"goodsDelivered":` + string(goodsAsbytes[:]) + `}`
+	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
 		return nil, err
 	}
@@ -278,8 +286,8 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	}
 	addedAmout, _ := strconv.ParseFloat(args[1], 64)
 	acc.SupplierBalance += addedAmout
-
-	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + acc.GoodsDelivered + `}`
+	del, _ := json.Marshal(acc.GoodsDelivered)
+	str := `{"supplierId":"` + acc.SupplierId + `","supplierName":"` + acc.SupplierName + `","supplierBalance":` + strconv.FormatFloat(acc.SupplierBalance, 'f', -1, 32) + `,"goodsDelivered":` + string(del[:]) + `}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, err
@@ -317,7 +325,7 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 		return nil, err
 	}
 	var addedGood []string
-	err = json.Unmarshal([]byte(acc.GoodsDelivered), &addedGood)
+	//err = json.Unmarshal([]byte(acc.GoodsDelivered), &addedGood)
 
 	addedGood = append(addedGood, order.Order_id)
 	goodsAsbytes, _ := json.Marshal(addedGood)
