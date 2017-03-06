@@ -462,7 +462,7 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 			bankAcc.LoanedAmount += bankAcc.Loans[i].LoanAmount
 			bankAcc.Loans[i].Status = "accepted"
 			temp = bankAcc.Loans[i].LoanAmount
-			bankAcc.LoanedAmount += temp
+
 			jsonAsbytes, err := json.Marshal(bankAcc)
 			err = stub.PutState(bankId, jsonAsbytes)
 			if err != nil {
