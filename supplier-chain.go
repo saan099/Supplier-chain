@@ -461,6 +461,7 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 		if bankAcc.Loans[i].LoanId == loanId {
 			bankAcc.LoanedAmount += bankAcc.Loans[i].LoanAmount
 			bankAcc.Loans[i].Status = "accepted"
+
 			temp = bankAcc.Loans[i].LoanAmount
 
 			jsonAsbytes, err := json.Marshal(bankAcc)
@@ -481,6 +482,38 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 		}
 	}
 
+	return nil, nil
+}
+
+func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	var err error
+	if len(args) != 3 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	buyerId := args[0]
+	bankId := args[1]
+	amountToPay, _ := strconv.ParseFloat(args[2], 64)
+
+	supplierAsbytes, err := stub.GetState(buyerId)
+	bankAsbytes, err := stub.GetState(bankId)
+
+	buyerAcc := buyer{}
+	bankAcc := bank{}
+
+	buyerAcc.BuyerBalance -= amountToPay
+	bankAcc.BankBalance += amountToPay
+
+	buyerjson, _ := json.Marshal(buyerAcc)
+	bankjson, _ := json.Marshal(bankAcc)
+
+	err = stub.PutState(buyerId, buyerjson)
+	if err != nil {
+		return nil, err
+	}
+	err = stub.PutState(bankId, bankjson)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
