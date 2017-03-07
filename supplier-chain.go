@@ -9,6 +9,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
+//order for a product
 type order struct {
 	Order_id      string  `json:"order_id"`
 	Product_name  string  `json:"product_name"`
@@ -18,6 +19,7 @@ type order struct {
 	Interest      float64 `json:"interest"`
 }
 
+//account for buyer
 type buyer struct {
 	BuyerId       string  `json:"buyerId"`
 	BuyerName     string  `json:"buyerName"`
@@ -25,6 +27,7 @@ type buyer struct {
 	GoodsRecieved []order `json:"goodsRecieved"`
 }
 
+//account for supplier
 type supplier struct {
 	SupplierId      string  `json:"supplierId"`
 	SupplierName    string  `json:"supplierName"`
@@ -32,6 +35,8 @@ type supplier struct {
 	GoodsDelivered  []order `json:"goodsDelivered"`
 	Loans           []loans `json:"loans"`
 }
+
+//account for bank
 type bank struct {
 	BankId         string  `json:"bankId"`
 	BankName       string  `json:"bankName"`
@@ -41,6 +46,7 @@ type bank struct {
 	AmountRecieved float64 `json:"amountRecieved"`
 }
 
+// loan details
 type loans struct {
 	LoanId     string  `json:"loanId"`
 	Orders     []order `json:"orders"`
@@ -57,6 +63,7 @@ var orderIndex string = "OrderIndex"
 type SupplierChaincode struct {
 }
 
+//launching chaincode
 func main() {
 
 	err := shim.Start(new(SupplierChaincode))
@@ -64,6 +71,8 @@ func main() {
 		fmt.Printf("Error starting Simple chaincode: %s", err)
 	}
 }
+
+//initializing chaincode
 func (t *SupplierChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 3 {
@@ -88,6 +97,7 @@ func (t *SupplierChaincode) Init(stub shim.ChaincodeStubInterface, function stri
 	return nil, nil
 }
 
+//function to invoke all functionality of chaoncode
 func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "init" {
@@ -128,6 +138,7 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 
 }
 
+//make order for product from buyer
 func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 3 {
@@ -149,6 +160,8 @@ func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface,
 	}
 	return nil, nil
 }
+
+//enter supply details for the order by supplier
 func (t *SupplierChaincode) SupplyDetailsinInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 3 {
@@ -174,6 +187,8 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice(stub shim.ChaincodeStubInterf
 	return nil, nil
 
 }
+
+//entering banking details in order by bank
 func (t *SupplierChaincode) BankDetailsinInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
@@ -201,6 +216,7 @@ func (t *SupplierChaincode) BankDetailsinInvoice(stub shim.ChaincodeStubInterfac
 	return nil, nil
 }
 
+//initialize buyer's account
 func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 3 {
@@ -224,6 +240,7 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 	return nil, nil
 }
 
+//initialize supplier's account
 func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
@@ -248,6 +265,8 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	}
 	return nil, nil
 }
+
+//initialize banker's account
 func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
@@ -270,6 +289,7 @@ func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, arg
 	return nil, nil
 }
 
+//add balance in banker's account
 func (t *SupplierChaincode) addBalanceinBank(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 2 {
@@ -295,6 +315,7 @@ func (t *SupplierChaincode) addBalanceinBank(stub shim.ChaincodeStubInterface, a
 	return nil, nil
 }
 
+//adding balance in buyer's account
 func (t *SupplierChaincode) addBalanceinBuyer(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 2 {
@@ -320,6 +341,7 @@ func (t *SupplierChaincode) addBalanceinBuyer(stub shim.ChaincodeStubInterface, 
 	return nil, nil
 }
 
+//adding balance in supplier's account
 func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 2 {
@@ -345,6 +367,7 @@ func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterfac
 	return nil, nil
 }
 
+//delivering goods to buyer by supplier
 func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
@@ -384,6 +407,7 @@ func (t *SupplierChaincode) DeliverGoods(stub shim.ChaincodeStubInterface, args 
 	return nil, nil
 }
 
+//recieving goods from supplier by buyer
 func (t *SupplierChaincode) RecieveGoods(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
@@ -424,6 +448,7 @@ func (t *SupplierChaincode) RecieveGoods(stub shim.ChaincodeStubInterface, args 
 
 }
 
+//loan request by supplier by providing an invoice
 func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	var err error
@@ -475,6 +500,7 @@ func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, 
 	return nil, nil
 }
 
+//accepting loan request from supplier and aloan transaction
 func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 4 {
@@ -524,6 +550,7 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 	return nil, nil
 }
 
+//paying the required amount to bank set by supplier including supplier's profit
 func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 3 {
@@ -558,6 +585,7 @@ func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []s
 	return nil, nil
 }
 
+//separating the interested amount from amount recieved from buyer and passing profits to supplier
 func (t *SupplierChaincode) SendProfitsToSupplier(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	if len(args) != 2 {
@@ -606,6 +634,7 @@ func (t *SupplierChaincode) Query(stub shim.ChaincodeStubInterface, function str
 
 }
 
+//reading any required state/account
 func (t *SupplierChaincode) Read(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 	if len(args) != 1 {
@@ -620,6 +649,7 @@ func (t *SupplierChaincode) Read(stub shim.ChaincodeStubInterface, args []string
 
 }
 
+//reading all orders made by buyer
 func (t *SupplierChaincode) ReadAllOrders(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	if len(args) != 0 {
 		return nil, errors.New("wrong number of arguments")
