@@ -494,7 +494,6 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 			for i := range supplierAcc.Loans {
 				if supplierAcc.Loans[i].LoanId == loanId {
 					supplierAcc.Loans[i].Status = "accepted"
-					supplierAcc := supplier{}
 					bankAcc.Loans[i].Interest, _ = strconv.ParseFloat(args[3], 64)
 				}
 			}
