@@ -33,11 +33,12 @@ type supplier struct {
 	Loans           []loans `json:"loans"`
 }
 type bank struct {
-	BankId       string  `json:"bankId"`
-	BankName     string  `json:"bankName"`
-	BankBalance  float64 `json:"bankBalance"`
-	Loans        []loans `json:"loans"`
-	LoanedAmount float64 `json:"loanedAmount"`
+	BankId         string  `json:"bankId"`
+	BankName       string  `json:"bankName"`
+	BankBalance    float64 `json:"bankBalance"`
+	Loans          []loans `json:"loans"`
+	LoanedAmount   float64 `json:"loanedAmount"`
+	AmountRecieved float64 `json:"amountRecieved"`
 }
 
 type loans struct {
@@ -246,6 +247,7 @@ func (t *SupplierChaincode) InitializeBank(stub shim.ChaincodeStubInterface, arg
 	acc.BankName = args[1]
 	acc.BankBalance, _ = strconv.ParseFloat(args[2], 64)
 	acc.Loans = l
+	acc.AmountRecieved = 0
 	jsonAsbytes, _ := json.Marshal(acc)
 	err = stub.PutState(args[0], jsonAsbytes)
 	if err != nil {
@@ -528,7 +530,7 @@ func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []s
 
 	buyerAcc.BuyerBalance -= amountToPay
 	bankAcc.BankBalance += amountToPay
-	bankAcc.LoanedAmount -= amountToPay
+	bankAcc.AmountRecieved += amountToPay
 	buyerjson, _ := json.Marshal(buyerAcc)
 	bankjson, _ := json.Marshal(bankAcc)
 
