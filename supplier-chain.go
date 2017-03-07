@@ -52,6 +52,7 @@ type loans struct {
 var buyerNameKey string = "buyerName"
 var supplierNameKey string = "supplierName"
 var bankNameKey string = "bankName"
+var orderIndex string = "OrderIndex"
 
 type SupplierChaincode struct {
 }
@@ -77,6 +78,9 @@ func (t *SupplierChaincode) Init(stub shim.ChaincodeStubInterface, function stri
 
 	err = stub.PutState(bankNameKey, []byte(args[2]))
 
+	var list []string
+	jsonAsbytes, _ := json.Marshal(list)
+	err = stub.PutState(orderIndex, jsonAsbytes)
 	if err != nil {
 		return nil, errors.New("didnt commit node's names")
 	}
@@ -116,7 +120,7 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.LoanAmount(stub, args)
 	} else if function == "payToBank" {
 		return t.PayToBank(stub, args)
-	} else if function == "sendProfitToSupplier" {
+	} else if function == "sendProfitsToSupplier" {
 		return t.SendProfitsToSupplier(stub, args)
 	}
 
@@ -134,7 +138,15 @@ func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface,
 	if err != nil {
 		return nil, errors.New("error created in order committed")
 	}
-
+	var list []string
+	valAsbytes, err := stub.GetState(orderIndex)
+	err = json.Unmarshal(valAsbytes, &list)
+	list = append(list, args[0])
+	jsonAsbytes, _ := json.Marshal(list)
+	err = stub.PutState(orderIndex, jsonAsbytes)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 func (t *SupplierChaincode) SupplyDetailsinInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
@@ -566,6 +578,7 @@ func (t *SupplierChaincode) SendProfitsToSupplier(stub shim.ChaincodeStubInterfa
 		supplierAcc.SupplierBalance += bankAcc.AmountRecieved - temp
 		supplierAcc.Loans[0].Status = "completed"
 		bankAcc.Loans[0].Status = "completed"
+		bankAcc.AmountRecieved -= temp
 		jsonBank, _ := json.Marshal(bankAcc)
 		jsonSupplier, _ := json.Marshal(supplierAcc)
 
@@ -585,6 +598,8 @@ func (t *SupplierChaincode) Query(stub shim.ChaincodeStubInterface, function str
 
 	if function == "read" {
 		return t.Read(stub, args)
+	} else if function == "readAllOrders" {
+		return t.ReadAllOrders(stub, args)
 	}
 
 	return nil, errors.New("quey didnt meet any function")
@@ -602,5 +617,32 @@ func (t *SupplierChaincode) Read(stub shim.ChaincodeStubInterface, args []string
 		return nil, err
 	}
 	return valAsbytes, nil
+
+}
+
+func (t *SupplierChaincode) ReadAllOrders(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	if len(args) != 0 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	var list []string
+	var str string
+	var orders []order
+	valAsbytes, err := stub.GetState(orderIndex)
+	err = json.Unmarshal(valAsbytes, &list)
+	for i := range list {
+		orderAsbytes, err := stub.GetState(list[i])
+		if err != nil {
+			return nil, err
+		}
+		o := order{}
+		json.Unmarshal(orderAsbytes, &o)
+		orders = append(orders, o)
+
+	}
+	jsonAsbytes, err := json.Marshal(orders)
+	if err != nil {
+		return nil, err
+	}
+	return jsonAsbytes, nil
 
 }
