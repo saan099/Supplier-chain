@@ -625,7 +625,6 @@ func (t *SupplierChaincode) ReadAllOrders(stub shim.ChaincodeStubInterface, args
 		return nil, errors.New("wrong number of arguments")
 	}
 	var list []string
-	var str string
 	var orders []order
 	valAsbytes, err := stub.GetState(orderIndex)
 	err = json.Unmarshal(valAsbytes, &list)
