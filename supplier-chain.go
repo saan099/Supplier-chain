@@ -30,6 +30,7 @@ type supplier struct {
 	SupplierName    string  `json:"supplierName"`
 	SupplierBalance float64 `json:"supplierBalance"`
 	GoodsDelivered  []order `json:"goodsDelivered"`
+	Loans           []loans `json:"loans"`
 }
 type bank struct {
 	BankId       string  `json:"bankId"`
@@ -44,6 +45,7 @@ type loans struct {
 	Orders     []order `json:"orders"`
 	LoanAmount float64 `json:"loanAmount"`
 	Status     string  `json:"status"`
+	Interest   float64 `json:"interest"`
 }
 
 var buyerNameKey string = "buyerName"
@@ -218,6 +220,8 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	acc.SupplierId = args[0]
 	acc.SupplierName = args[1]
 	acc.SupplierBalance, _ = strconv.ParseFloat(args[2], 64)
+	var l []loans
+	acc.Loans = l
 
 	var goodsDelivered []order
 	acc.GoodsDelivered = goodsDelivered
@@ -430,23 +434,34 @@ func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, 
 	i = i + 1
 	loan.LoanAmount, _ = strconv.ParseFloat(args[i], 64)
 	loan.Status = "pending"
-
-	acc := bank{}
+	loan.Interest = 0
+	bankAcc := bank{}
 	i = i + 1
 	valueAsbytes, err := stub.GetState(args[i])
-	err = json.Unmarshal(valueAsbytes, &acc)
-	acc.Loans = append(acc.Loans, loan)
-	valAsbytes, err := json.Marshal(acc)
+	err = json.Unmarshal(valueAsbytes, &bankAcc)
+	bankAcc.Loans = append(bankAcc.Loans, loan)
+	valAsbytes, err := json.Marshal(bankAcc)
 	err = stub.PutState(args[i], valAsbytes)
 	if err != nil {
 		return nil, err
 	}
+	i = i + 1
+	supplierAcc := supplier{}
+	supplierAsbytes, err := stub.GetState(args[i])
+	err = json.Unmarshal(supplierAsbytes, &supplierAcc)
+	supplierAcc.Loans = append(supplierAcc.Loans, loan)
+	jsonAsbytes, err := json.Marshal(supplierAcc)
+	err = stub.PutState(args[i], jsonAsbytes)
+	if err != nil {
+		return nil, err
+	}
+
 	return nil, nil
 }
 
 func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return nil, errors.New("wrong number of arguments")
 	}
 	var temp float64
@@ -463,7 +478,7 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 		if bankAcc.Loans[i].LoanId == loanId {
 			bankAcc.LoanedAmount += bankAcc.Loans[i].LoanAmount
 			bankAcc.Loans[i].Status = "accepted"
-
+			bankAcc.Loans[i].Interest, _ = strconv.ParseFloat(args[3], 64)
 			temp = bankAcc.Loans[i].LoanAmount
 
 			jsonAsbytes, err := json.Marshal(bankAcc)
@@ -471,10 +486,17 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 			if err != nil {
 				return nil, err
 			}
-
 			supplierAcc := supplier{}
 			supplierAsbytes, err := stub.GetState(supplierId)
 			err = json.Unmarshal(supplierAsbytes, &supplierAcc)
+			for i := range supplierAcc.Loans {
+				if supplierAcc.Loans[i].LoanId == loanId {
+					supplierAcc.Loans[i].Status = "accepted"
+					supplierAcc := supplier{}
+					bankAcc.Loans[i].Interest, _ = strconv.ParseFloat(args[3], 64)
+				}
+			}
+
 			supplierAcc.SupplierBalance += temp
 			jsonAsbyte, err := json.Marshal(supplierAcc)
 			err = stub.PutState(supplierId, jsonAsbyte)
@@ -506,7 +528,7 @@ func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []s
 
 	buyerAcc.BuyerBalance -= amountToPay
 	bankAcc.BankBalance += amountToPay
-
+	bankAcc.LoanedAmount -= amountToPay
 	buyerjson, _ := json.Marshal(buyerAcc)
 	bankjson, _ := json.Marshal(bankAcc)
 
