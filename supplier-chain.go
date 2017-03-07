@@ -116,6 +116,8 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 		return t.LoanAmount(stub, args)
 	} else if function == "payToBank" {
 		return t.PayToBank(stub, args)
+	} else if function == "sendProfitToSupplier" {
+		return t.SendProfitsToSupplier(stub, args)
 	}
 
 	return nil, errors.New("No function invoked")
@@ -482,7 +484,7 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 			bankAcc.Loans[i].Status = "accepted"
 			bankAcc.Loans[i].Interest, _ = strconv.ParseFloat(args[3], 64)
 			temp = bankAcc.Loans[i].LoanAmount
-
+			bankAcc.BankBalance -= temp
 			jsonAsbytes, err := json.Marshal(bankAcc)
 			err = stub.PutState(bankId, jsonAsbytes)
 			if err != nil {
@@ -494,7 +496,7 @@ func (t *SupplierChaincode) LoanAmount(stub shim.ChaincodeStubInterface, args []
 			for i := range supplierAcc.Loans {
 				if supplierAcc.Loans[i].LoanId == loanId {
 					supplierAcc.Loans[i].Status = "accepted"
-					bankAcc.Loans[i].Interest, _ = strconv.ParseFloat(args[3], 64)
+					supplierAcc.Loans[i].Interest, _ = strconv.ParseFloat(args[3], 64)
 				}
 			}
 
@@ -542,6 +544,40 @@ func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []s
 		return nil, err
 	}
 	return nil, nil
+}
+
+func (t *SupplierChaincode) SendProfitsToSupplier(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+	if len(args) != 2 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	supplierAcc := supplier{}
+	supplierAsbytes, err := stub.GetState(args[0])
+	err = json.Unmarshal(supplierAsbytes, &supplierAcc)
+	if err != nil {
+		return nil, err
+	}
+	bankAcc := bank{}
+	bankAsbytes, err := stub.GetState(args[1])
+	err = json.Unmarshal(bankAsbytes, &bankAcc)
+	temp := bankAcc.LoanedAmount + (bankAcc.LoanedAmount*bankAcc.Loans[0].Interest)/100
+	if temp < bankAcc.AmountRecieved {
+		bankAcc.BankBalance -= bankAcc.AmountRecieved - temp
+		supplierAcc.SupplierBalance += bankAcc.AmountRecieved - temp
+		supplierAcc.Loans[0].Status = "completed"
+		bankAcc.Loans[0].Status = "completed"
+		jsonBank, _ := json.Marshal(bankAcc)
+		jsonSupplier, _ := json.Marshal(supplierAcc)
+
+		err = stub.PutState(args[1], jsonBank)
+		err = stub.PutState(args[0], jsonSupplier)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return nil, nil
+
 }
 
 //Queries---
