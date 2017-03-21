@@ -152,8 +152,8 @@ func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface,
 	o.Delivery_date = "null"
 	o.Status = "pending"
 	//str := `{"order_id": "` + args[0] + `", "product_name": "` + args[1] + `", "quantity": ` + args[2] + `, "total_payment":` + strconv.ParseFloat(`0`, 64) + `,"delivery_date":"` + `null` + `","status":"` + `pending` + `"}`
-	jsonAsbytes, err := json.Marshal(o)
-	err = stub.PutState(args[0], jsonAsbytes)
+	orderAsbytes, err := json.Marshal(o)
+	err = stub.PutState(args[0], orderAsbytes)
 	if err != nil {
 		return nil, errors.New("error created in order committed")
 	}
