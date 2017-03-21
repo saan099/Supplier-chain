@@ -11,12 +11,12 @@ import (
 
 //order for a product
 type order struct {
-	Order_id      string `json:"order_id"`
-	Product_name  string `json:"product_name"`
-	Quantity      int    `json:"quantity"`
-	Total_payment int    `json:"total_payment"`
-	Delivery_date string `json:"delivery_date"`
-	Status        string `json:"status"`
+	Order_id      string  `json:"order_id"`
+	Product_name  string  `json:"product_name"`
+	Quantity      int     `json:"quantity"`
+	Total_payment float64 `json:"total_payment"`
+	Delivery_date string  `json:"delivery_date"`
+	Status        string  `json:"status"`
 }
 
 //account for buyer
@@ -145,7 +145,7 @@ func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("number of arguments are wrong")
 	}
-	str := `{"order_id": "` + args[0] + `", "product_name": "` + args[1] + `", "quantity": ` + args[2] + `, "total_payment":` + strconv.Itoa(0) + `,"delivery_date":"` + `null` + `","status":"` + `pending` + `"}`
+	str := `{"order_id": "` + args[0] + `", "product_name": "` + args[1] + `", "quantity": ` + args[2] + `, "total_payment":` + strconv.ParseFloat(`0`, 64) + `,"delivery_date":"` + `null` + `","status":"` + `pending` + `"}`
 	err = stub.PutState(args[0], []byte(str))
 	if err != nil {
 		return nil, errors.New("error created in order committed")
@@ -178,10 +178,12 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice(stub shim.ChaincodeStubInterf
 		return nil, err
 	}
 
-	inv.Total_payment, _ = strconv.Atoi(args[1])
+	inv.Total_payment, _ = strconv.ParseFloat(args[1], 64)
 	inv.Delivery_date = args[2]
-	str := `{"order_id": "` + inv.Order_id + `", "product_name": "` + inv.Product_name + `", "quantity": ` + strconv.Itoa(inv.Quantity) + `, "total_payment":` + strconv.Itoa(inv.Total_payment) + `,"delivery_date":"` + inv.Delivery_date + `","status":"` + `processing` + `"}`
-	err = stub.PutState(inv.Order_id, []byte(str))
+	inv.Status = "processing"
+	jsonAsbytes, _ := json.Marshal(inv)
+	//str := `{"order_id": "` + inv.Order_id + `", "product_name": "` + inv.Product_name + `", "quantity": ` + strconv.Itoa(inv.Quantity) + `, "total_payment":` + strconv.ParseFloat(`0`, 64) + `,"delivery_date":"` + inv.Delivery_date + `","status":"` + `processing` + `"}`
+	err = stub.PutState(inv.Order_id, jsonAsbytes)
 	if err != nil {
 		return nil, errors.New("state not committed")
 	}
