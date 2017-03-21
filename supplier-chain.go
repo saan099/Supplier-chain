@@ -190,29 +190,29 @@ func (t *SupplierChaincode) SupplyDetailsinInvoice(stub shim.ChaincodeStubInterf
 
 //entering banking details in order by bank
 func (t *SupplierChaincode) BankDetailsinInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	/*
+		var err error
+		if len(args) != 2 {
+			return nil, errors.New("number of arguments are wrong")
+		}
 
-	var err error
-	if len(args) != 2 {
-		return nil, errors.New("number of arguments are wrong")
-	}
+		valAsbytes, err := stub.GetState(args[0])
+		if err != nil {
+			return nil, err
+		}
+		inv := order{}
+		err = json.Unmarshal(valAsbytes, &inv)
+		if err != nil {
+			return nil, err
+		}
 
-	valAsbytes, err := stub.GetState(args[0])
-	if err != nil {
-		return nil, err
-	}
-	inv := order{}
-	err = json.Unmarshal(valAsbytes, &inv)
-	if err != nil {
-		return nil, err
-	}
+		inv.Interest, _ = strconv.ParseFloat(args[1], 64)
 
-	inv.Interest, _ = strconv.ParseFloat(args[1], 64)
-
-	str := `{"order_id": "` + inv.Order_id + `", "product_name": "` + inv.Product_name + `", "quantity": ` + strconv.Itoa(inv.Quantity) + `, "total_payment":` + strconv.Itoa(inv.Total_payment) + `,"delivery_date":"` + inv.Delivery_date + `","interest":` + strconv.FormatFloat(inv.Interest, 'f', -1, 32) + `}`
-	err = stub.PutState(args[0], []byte(str))
-	if err != nil {
-		return nil, err
-	}
+		str := `{"order_id": "` + inv.Order_id + `", "product_name": "` + inv.Product_name + `", "quantity": ` + strconv.Itoa(inv.Quantity) + `, "total_payment":` + strconv.Itoa(inv.Total_payment) + `,"delivery_date":"` + inv.Delivery_date + `","interest":` + strconv.FormatFloat(inv.Interest, 'f', -1, 32) + `}`
+		err = stub.PutState(args[0], []byte(str))
+		if err != nil {
+			return nil, err
+		}*/
 	return nil, nil
 }
 
