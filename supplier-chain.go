@@ -25,6 +25,7 @@ type buyer struct {
 	BuyerName     string  `json:"buyerName"`
 	BuyerBalance  float64 `json:"buyerBalance"`
 	GoodsRecieved []order `json:"goodsRecieved"`
+	PendingPay    float64 `json:"pendingPay"`
 }
 
 //account for supplier
@@ -229,6 +230,7 @@ func (t *SupplierChaincode) InitializeBuyer(stub shim.ChaincodeStubInterface, ar
 	acc.BuyerBalance, _ = strconv.ParseFloat(args[2], 64)
 	var goodsrecieved []order
 	acc.GoodsRecieved = goodsrecieved
+	acc.PendingPay = 0
 	jsonAsbytes, _ := json.Marshal(acc)
 
 	//str := `{"buyerId":"` + args[0] + `","buyerName":"` + args[1] + `","buyerBalance":` + args[2] + `,"goodsRecieved":"` + string(goodsAsbytes[:]) + `"}`
@@ -446,7 +448,7 @@ func (t *SupplierChaincode) RecieveGoods(stub shim.ChaincodeStubInterface, args 
 		return nil, err
 	}
 	acc.GoodsRecieved = append(acc.GoodsRecieved, o)
-
+	acc.PendingPay += o.Total_payment
 	jsonAsbytes, err := json.Marshal(acc)
 	err = stub.PutState(buyerId, jsonAsbytes)
 	if err != nil {
@@ -575,7 +577,7 @@ func (t *SupplierChaincode) PayToBank(stub shim.ChaincodeStubInterface, args []s
 	bankAcc := bank{}
 	err = json.Unmarshal(buyerAsbytes, &buyerAcc)
 	err = json.Unmarshal(bankAsbytes, &bankAcc)
-
+	buyerAcc.PendingPay -= amountToPay
 	buyerAcc.BuyerBalance -= amountToPay
 	bankAcc.BankBalance += amountToPay
 	bankAcc.AmountRecieved += amountToPay
