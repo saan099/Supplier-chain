@@ -145,8 +145,15 @@ func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface,
 	if len(args) != 3 {
 		return nil, errors.New("number of arguments are wrong")
 	}
-	str := `{"order_id": "` + args[0] + `", "product_name": "` + args[1] + `", "quantity": ` + args[2] + `, "total_payment":` + strconv.ParseFloat(`0`, 64) + `,"delivery_date":"` + `null` + `","status":"` + `pending` + `"}`
-	err = stub.PutState(args[0], []byte(str))
+	var o = order{}
+	o.Order_id = args[0]
+	o.Product_name = args[1]
+	o.Total_payment, _ = strconv.ParseFloat(`0`, 64)
+	o.Delivery_date = "null"
+	o.Status = "pending"
+	//str := `{"order_id": "` + args[0] + `", "product_name": "` + args[1] + `", "quantity": ` + args[2] + `, "total_payment":` + strconv.ParseFloat(`0`, 64) + `,"delivery_date":"` + `null` + `","status":"` + `pending` + `"}`
+	jsonAsbytes, err := json.Marshal(o)
+	err = stub.PutState(args[0], o)
 	if err != nil {
 		return nil, errors.New("error created in order committed")
 	}
