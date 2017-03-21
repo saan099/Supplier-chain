@@ -148,7 +148,7 @@ func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface,
 	var o = order{}
 	o.Order_id = args[0]
 	o.Product_name = args[1]
-	o.Quantity = args[2]
+	o.Quantity, _ = strconv.ParseFloat(args[2], 64)
 	o.Total_payment, _ = strconv.ParseFloat(`0`, 64)
 	o.Delivery_date = "null"
 	o.Status = "pending"
