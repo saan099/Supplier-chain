@@ -486,7 +486,7 @@ func (t *SupplierChaincode) invoiceGeneration(stub shim.ChaincodeStubInterface, 
 		if er != nil {
 			return nil, er
 		}
-		err = json.Unmarshal(valAsbytes, o)
+		err = json.Unmarshal(valAsbytes, &o)
 		loan.Orders = append(loan.Orders, o)
 	}
 	i = i + 1
