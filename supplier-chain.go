@@ -17,6 +17,7 @@ type order struct {
 	Total_payment float64 `json:"total_payment"`
 	Delivery_date string  `json:"delivery_date"`
 	Status        string  `json:"status"`
+	To_supplier   string  `json:"to_supplier"`
 }
 
 //account for buyer
@@ -98,7 +99,7 @@ func (t *SupplierChaincode) Init(stub shim.ChaincodeStubInterface, function stri
 	return nil, nil
 }
 
-//function to invoke all functionality of chaoncode
+//function to invoke all functionality of chaincode
 func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
 
 	if function == "init" {
@@ -142,13 +143,14 @@ func (t *SupplierChaincode) Invoke(stub shim.ChaincodeStubInterface, function st
 //make order for product from buyer
 func (t *SupplierChaincode) MakeOrderinInvoice(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
-	if len(args) != 3 {
+	if len(args) != 4 {
 		return nil, errors.New("number of arguments are wrong")
 	}
 	var o = order{}
 	o.Order_id = args[0]
 	o.Product_name = args[1]
 	o.Quantity, _ = strconv.Atoi(args[2])
+	o.To_supplier = args[3]
 	o.Total_payment, _ = strconv.ParseFloat(`0`, 64)
 	o.Delivery_date = "null"
 	o.Status = "pending"
@@ -353,7 +355,7 @@ func (t *SupplierChaincode) addBalanceinBuyer(stub shim.ChaincodeStubInterface, 
 	return nil, nil
 }
 
-//adding balance in supplier's account
+// adding balance in supplier's account
 func (t *SupplierChaincode) addBalanceinSupplier(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	if len(args) != 2 {
