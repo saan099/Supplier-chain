@@ -711,3 +711,27 @@ func (t *SupplierChaincode) ReadAllOrders(stub shim.ChaincodeStubInterface, args
 	return jsonAsbytes, nil
 
 }
+
+func (t *SupplierChaincode) readAllSuppliers(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+	if len(args) != 0 {
+		return nil, errors.New("wrong number of arguments")
+	}
+	supplierAsbytes, err := stub.GetState(supplierIndex)
+	var supplylist []string
+	var supplyDetailList []supplier
+	err = json.Unmarshal(supplierIndex, &supplylist)
+	for i := range supplylist {
+		var supplierAcc = supplier{}
+		jsonsupply, err := stub.GetState(supplylist[i])
+		err = json.Unmarshal(jsonsupply, &supplierAcc)
+		if err != nil {
+			return nil, err
+		}
+		supplyDetailList = append(supplyDetailList, supplierAcc)
+	}
+	suppliersData, err := json.Marshal(supplyDetailList)
+	if err != nil {
+		return nil, err
+	}
+	return suppliersData, nil
+}
