@@ -283,7 +283,7 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	}
 	var supplierList []string
 	supplierListAsBytes, err := stub.GetState(supplierIndex)
-	err = json.Unmarshal(supplierListAsBytes, supplierList)
+	err = json.Unmarshal(supplierListAsBytes, &supplierList)
 	supplierList = append(supplierList, args[0])
 	supplierListJsonbytes, err := json.Marshal(supplierList)
 	err = stub.PutState(supplierIndex, supplierListJsonbytes)
