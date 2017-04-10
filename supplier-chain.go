@@ -61,6 +61,7 @@ var buyerNameKey string = "buyerName"
 var supplierNameKey string = "supplierName"
 var bankNameKey string = "bankName"
 var orderIndex string = "OrderIndex"
+var supplierIndex string = "SupplierIndex"
 
 type SupplierChaincode struct {
 }
@@ -95,7 +96,10 @@ func (t *SupplierChaincode) Init(stub shim.ChaincodeStubInterface, function stri
 	if err != nil {
 		return nil, errors.New("didnt commit node's names")
 	}
-
+	err = stub.PutState(supplierIndex, jsonAsbytes)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
@@ -277,6 +281,16 @@ func (t *SupplierChaincode) InitializeSupplier(stub shim.ChaincodeStubInterface,
 	if err != nil {
 		return nil, err
 	}
+	var supplierList []string
+	supplierListAsBytes, err := stub.GetState(supplierIndex)
+	err = json.Unmarshal(supplierListAsBytes, supplierList)
+	supplierList = append(supplierList, args[0])
+	supplierListJsonbytes, err := json.Marshal(supplierList)
+	err = stub.PutState(supplierIndex, supplierListJsonbytes)
+	if err != nil {
+		return nil, err
+	}
+
 	return nil, nil
 }
 
