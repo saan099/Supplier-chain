@@ -664,6 +664,8 @@ func (t *SupplierChaincode) Query(stub shim.ChaincodeStubInterface, function str
 		return t.Read(stub, args)
 	} else if function == "readAllOrders" {
 		return t.ReadAllOrders(stub, args)
+	} else if function == "readAllSuppliers" {
+		return t.ReadAllSuppliers(stub, args)
 	}
 
 	return nil, errors.New("quey didnt meet any function")
@@ -712,7 +714,7 @@ func (t *SupplierChaincode) ReadAllOrders(stub shim.ChaincodeStubInterface, args
 
 }
 
-func (t *SupplierChaincode) readAllSuppliers(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+func (t *SupplierChaincode) ReadAllSuppliers(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	if len(args) != 0 {
 		return nil, errors.New("wrong number of arguments")
 	}
