@@ -719,7 +719,7 @@ func (t *SupplierChaincode) readAllSuppliers(stub shim.ChaincodeStubInterface, a
 	supplierAsbytes, err := stub.GetState(supplierIndex)
 	var supplylist []string
 	var supplyDetailList []supplier
-	err = json.Unmarshal(supplierIndex, &supplylist)
+	err = json.Unmarshal(supplierAsbytes, &supplylist)
 	for i := range supplylist {
 		var supplierAcc = supplier{}
 		jsonsupply, err := stub.GetState(supplylist[i])
